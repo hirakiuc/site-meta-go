@@ -34,11 +34,6 @@ build:
 
     - wercker/glide-install
 
-    - script:
-        name: Install golint
-        code: |
-          go get -u github.com/golang/lint/golint
-
     # Build the project
     - script:
         name: go build
@@ -49,6 +44,4 @@ build:
     - script:
         name: test
         code: |
-          go vet
-          golint
           go test -cover .
