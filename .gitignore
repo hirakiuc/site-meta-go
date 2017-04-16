@@ -1,4 +1,5 @@
 /vendor
+.wercker/
 
 # Created by https://www.gitignore.io/api/go,vim
 
