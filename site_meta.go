@@ -88,7 +88,7 @@ func Parse(url string) (*SiteMeta, error) {
 
 	doc.Find("meta").Each(func(_ int, s *goquery.Selection) {
 		attr := parseMetaAttr(s)
-		if attr.IsValid() == true {
+		if attr != nil && attr.IsValid() == true {
 			data.Attrs = append(data.Attrs, *attr)
 		}
 	})

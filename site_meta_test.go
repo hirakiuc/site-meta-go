@@ -118,6 +118,28 @@ func TestParseWithValidContentUrl(t *testing.T) {
 	}
 }
 
+func TestParseWithValidContentUrlWithSiteMetaTag(t *testing.T) {
+	handlers := []http.Handler{
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "text/html")
+			fmt.Fprintf(w, `<html><meta name="viewport" content="width=device-width"></html>`)
+		}),
+	}
+
+	for _, handler := range handlers {
+		ts := httptest.NewServer(handler)
+		defer ts.Close()
+
+		result, err := Parse(ts.URL)
+		if err != nil {
+			t.Errorf("Error should not thrown. %v", err)
+		}
+		if result != nil {
+			t.Errorf("SiteMeta should be nil. %v", result)
+		}
+	}
+}
+
 func TestParseWithValidContentUrlWithTwitterCard(t *testing.T) {
 	handlers := []http.Handler{
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
