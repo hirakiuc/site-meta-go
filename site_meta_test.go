@@ -101,20 +101,28 @@ func TestParseWithInvalidContentUrl(t *testing.T) {
 }
 
 func TestParseWithValidContentUrl(t *testing.T) {
-	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/html")
-		fmt.Fprintf(w, "Sample Response")
-	})
-
-	ts := httptest.NewServer(handler)
-	defer ts.Close()
-
-	result, err := Parse(ts.URL)
-	if err != nil {
-		t.Errorf("Error should not thrown. %v", err)
+	handlers := []http.Handler{
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "text/html")
+			fmt.Fprintf(w, "Sample Response")
+		}),
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "text/html; charset=utf8")
+			fmt.Fprintf(w, "Sample Response")
+		}),
 	}
-	if result != nil {
-		t.Errorf("Result should be nil. %v", result)
+
+	for _, handler := range handlers {
+		ts := httptest.NewServer(handler)
+		defer ts.Close()
+
+		result, err := Parse(ts.URL)
+		if err != nil {
+			t.Errorf("Error should not thrown. %v", err)
+		}
+		if result != nil {
+			t.Errorf("Result should be nil. %v", result)
+		}
 	}
 }
 

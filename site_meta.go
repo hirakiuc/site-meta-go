@@ -41,7 +41,8 @@ func isHTMLContent(url string) (bool, error) {
 		return false, err
 	}
 
-	return (res.Header["Content-Type"][0] == "text/html"), nil
+	contentType := strings.TrimSpace(res.Header["Content-Type"][0])
+	return strings.HasPrefix(contentType, "text/html"), nil
 }
 
 // String return a description about this instance.
