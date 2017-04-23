@@ -9,10 +9,12 @@ install:
 clean:
 	go clean
 
+.PHONY: check
 check:
 	go vet
 	golint
 
+.PHONY: test
 test:
 	go test -cover
 

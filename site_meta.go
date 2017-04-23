@@ -3,14 +3,37 @@ package sitemeta
 import (
 	"errors"
 	"net/http"
+	"regexp"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
+	iconv "github.com/djimenez/iconv-go"
 )
 
 // SiteMeta describe meta data of the website, like ogp, TwitterCard.
 type SiteMeta struct {
 	Attrs []MetaAttr
+
+	isHTMLContent   bool
+	contentEncoding string
+}
+
+const (
+	// DefaultEncoding describe a default encoding.
+	DefaultEncoding string = "utf-8"
+)
+
+func init() {
+	initLogger()
+}
+
+func newSiteMeta() SiteMeta {
+	return SiteMeta{
+		Attrs: []MetaAttr{},
+
+		isHTMLContent:   false,
+		contentEncoding: DefaultEncoding,
+	}
 }
 
 func parseMetaAttr(s *goquery.Selection) *MetaAttr {
@@ -35,18 +58,40 @@ func parseMetaAttr(s *goquery.Selection) *MetaAttr {
 	return &attr
 }
 
-func isHTMLContent(url string) (bool, error) {
+func extractCharset(contentType string) string {
+	logger.Printf("contentType: %s\n", contentType)
+
+	exp := regexp.MustCompile(`charset=((\w|\d|\-)*)`)
+	group := exp.FindStringSubmatch(contentType)
+
+	if len(group) < 2 {
+		logger.Printf("len(group) less than 2")
+		return DefaultEncoding
+	}
+
+	// TODO: Normalize target encoding.
+	logger.Printf("Found charset: %s\n", group[1])
+	return group[1]
+}
+
+func (meta *SiteMeta) isValidContent(url string) (bool, error) {
 	res, err := http.Head(url)
 	if err != nil {
 		return false, err
 	}
 
 	contentType := strings.TrimSpace(res.Header["Content-Type"][0])
-	return strings.HasPrefix(contentType, "text/html"), nil
+	if strings.Index(contentType, "text/html") != -1 {
+		meta.isHTMLContent = true
+	}
+
+	meta.contentEncoding = extractCharset(contentType)
+
+	return meta.isHTMLContent, nil
 }
 
 // String return a description about this instance.
-func (meta SiteMeta) String() string {
+func (meta *SiteMeta) String() string {
 	attrs := []string{}
 	for _, attr := range meta.Attrs {
 		if attr.IsValid() == true {
@@ -57,7 +102,7 @@ func (meta SiteMeta) String() string {
 }
 
 // IsValid validate that this instance keeps valid value, or not.
-func (meta SiteMeta) IsValid() bool {
+func (meta *SiteMeta) IsValid() bool {
 	if len(meta.Attrs) == 0 {
 		return false
 	}
@@ -71,9 +116,34 @@ func (meta SiteMeta) IsValid() bool {
 	return true
 }
 
+func (meta *SiteMeta) convertEncoding() error {
+	logger.Printf("Target encoding: %s\n", meta.contentEncoding)
+	converter, err := iconv.NewConverter(meta.contentEncoding, DefaultEncoding)
+	if err != nil {
+		return err
+	}
+	defer converter.Close()
+
+	for idx, attr := range meta.Attrs {
+		attr.Name, err = converter.ConvertString(attr.Name)
+		if err != nil {
+			logger.Printf("Failed to convert encoding: %s %v\n", attr.Name, err)
+		}
+
+		attr.Content, err = converter.ConvertString(attr.Content)
+		if err != nil {
+			logger.Printf("Failed to convert encoding: %s %v\n", attr.Name, err)
+		}
+		meta.Attrs[idx] = attr
+	}
+	return nil
+}
+
 // Parse return SiteMeta instance if the url content has meta tags about twitter card or ogp.
 func Parse(url string) (*SiteMeta, error) {
-	result, err := isHTMLContent(url)
+	data := newSiteMeta()
+
+	result, err := data.isValidContent(url)
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +151,6 @@ func Parse(url string) (*SiteMeta, error) {
 		return nil, errors.New("Target Content seems like not html")
 	}
 
-	data := SiteMeta{Attrs: []MetaAttr{}}
 	doc, err := goquery.NewDocument(url)
 	if err != nil {
 		return nil, err
@@ -93,6 +162,8 @@ func Parse(url string) (*SiteMeta, error) {
 			data.Attrs = append(data.Attrs, *attr)
 		}
 	})
+
+	data.convertEncoding()
 
 	if data.IsValid() == false {
 		return nil, nil

@@ -2,8 +2,10 @@ package sitemeta
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 )
 
@@ -187,7 +189,57 @@ func TestParseWithValidContentUrlWithOgp(t *testing.T) {
 			t.Errorf("Error should not thrown. %v", err)
 		}
 		if result == nil {
-			t.Errorf("SiteMeta should not be nil. %v", err)
+			t.Errorf("SiteMeta should not be nil.")
+		}
+	}
+}
+
+type FileExample struct {
+	FileName string
+	Encoding string
+}
+
+func makeExampleHandler(example FileExample) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		contentTypeValue := fmt.Sprintf("text/html; charset=%s", example.Encoding)
+		w.Header().Set("Content-Type", contentTypeValue)
+
+		fpath := fmt.Sprintf("./test/files/%s", example.FileName)
+		file, err := os.Open(fpath)
+		if err != nil {
+			w.WriteHeader(500)
+			return
+		}
+		body, err := ioutil.ReadAll(file)
+		if err != nil {
+			w.WriteHeader(500)
+			return
+		}
+
+		w.Write(body)
+	})
+}
+
+func TestParseWithNonUTF8ContentUrl(t *testing.T) {
+	examples := []FileExample{
+		FileExample{FileName: "utf8.html", Encoding: "utf-8"},
+		FileExample{FileName: "eucjp.html", Encoding: "euc-jp"},
+		FileExample{FileName: "sjis.html", Encoding: "SHIFT_JIS"},
+		FileExample{FileName: "iso2022jp.html", Encoding: "ISO-2022-JP"},
+	}
+
+	for _, example := range examples {
+		fmt.Println(example.FileName)
+		handler := makeExampleHandler(example)
+		ts := httptest.NewServer(handler)
+		defer ts.Close()
+
+		result, err := Parse(ts.URL)
+		if err != nil {
+			t.Errorf("Error should not thrown. %v", err)
+		}
+		if result == nil {
+			t.Errorf("SiteMeta should not be nil.")
 		}
 	}
 }
