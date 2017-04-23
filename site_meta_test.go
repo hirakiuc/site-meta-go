@@ -229,7 +229,6 @@ func TestParseWithNonUTF8ContentUrl(t *testing.T) {
 	}
 
 	for _, example := range examples {
-		fmt.Println(example.FileName)
 		handler := makeExampleHandler(example)
 		ts := httptest.NewServer(handler)
 		defer ts.Close()
