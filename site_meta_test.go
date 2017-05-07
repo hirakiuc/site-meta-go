@@ -242,3 +242,23 @@ func TestParseWithNonUTF8ContentUrl(t *testing.T) {
 		}
 	}
 }
+
+func TestParseWithInvalidEncodingUrl(t *testing.T) {
+	examples := []FileExample{
+		FileExample{FileName: "utf8.html", Encoding: "InvalidEncoding"},
+	}
+
+	for _, example := range examples {
+		handler := makeExampleHandler(example)
+		ts := httptest.NewServer(handler)
+		defer ts.Close()
+
+		result, err := Parse(ts.URL)
+		if err == nil {
+			t.Errorf("Error should be thrown.")
+		}
+		if result != nil {
+			t.Errorf("SiteMeta should be nil.")
+		}
+	}
+}

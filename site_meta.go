@@ -128,11 +128,13 @@ func (meta *SiteMeta) convertEncoding() error {
 		attr.Name, err = converter.ConvertString(attr.Name)
 		if err != nil {
 			logger.Printf("Failed to convert encoding: %s %v\n", attr.Name, err)
+			return err
 		}
 
 		attr.Content, err = converter.ConvertString(attr.Content)
 		if err != nil {
 			logger.Printf("Failed to convert encoding: %s %v\n", attr.Name, err)
+			return err
 		}
 		meta.Attrs[idx] = attr
 	}
@@ -163,8 +165,9 @@ func Parse(url string) (*SiteMeta, error) {
 		}
 	})
 
-	data.convertEncoding()
-
+	if err := data.convertEncoding(); err != nil {
+		return nil, err
+	}
 	if data.IsValid() == false {
 		return nil, nil
 	}
