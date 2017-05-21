@@ -83,17 +83,6 @@ func TestParseWithInvalidUrl(t *testing.T) {
 	}
 }
 
-func TestParseWithRealUrl(t *testing.T) {
-	url := "http://nlab.itmedia.co.jp/nl/articles/1705/19/news106.html"
-	result, err := Parse(url)
-	if err != nil {
-		t.Errorf("Error:%v", err)
-	}
-	if result.IsValid() == false {
-		t.Errorf("Result should be valid.")
-	}
-}
-
 func TestParseWithInvalidContentUrl(t *testing.T) {
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/pdf")
