@@ -15,7 +15,7 @@ import (
 
 const (
 	// DefaultEncoding describe a default encoding.
-	DefaultEncoding string = "utf-8"
+	DefaultEncoding string = "UTF-8"
 )
 
 // HTMLContent describe the html page of the URL.
@@ -41,7 +41,7 @@ func extractCharset(contentType string) string {
 
 	// TODO: Normalize target encoding.
 	logger.Printf("Found charset: %s\n", group[1])
-	return group[1]
+	return strings.ToUpper(group[1])
 }
 
 func parseMetaAttr(key string, s *goquery.Selection) *MetaAttr {
@@ -153,7 +153,7 @@ func (content *HTMLContent) extractCharset() {
 		charset, found := s.Attr("charset")
 		if found {
 			logger.Printf("extractCharset:%s", charset)
-			content.ContentEncoding = charset
+			content.ContentEncoding = strings.ToUpper(charset)
 			return
 		}
 	}
