@@ -104,8 +104,7 @@ func Parse(url string) (*SiteMeta, error) {
 	}
 
 	if data.IsValid() == false {
-		logger.Printf(data.String())
-		return nil, errors.New("Can't parse SiteMeta.")
+		return nil, errors.New("This site can't parse SiteMeta")
 	}
 
 	return &data, nil
