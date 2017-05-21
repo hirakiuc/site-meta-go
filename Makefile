@@ -11,12 +11,16 @@ clean:
 
 .PHONY: check
 check:
-	go vet
-	golint
+	go vet . ./internal/...
+	golint ./internal/...
+	golint .
 
 .PHONY: test
 test:
 	go test -cover
+
+testbuild:
+	go test -c -args -w -gcflags "-N -l"
 
 .PHONY: default
 default:

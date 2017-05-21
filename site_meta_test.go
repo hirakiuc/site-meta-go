@@ -11,7 +11,7 @@ import (
 
 func TestIsValidWithEmptyAttr(t *testing.T) {
 	examples := []SiteMeta{
-		{Attrs: []MetaAttr{}},
+		{Attrs: map[string]string{}},
 	}
 
 	for _, ex := range examples {
@@ -24,13 +24,13 @@ func TestIsValidWithEmptyAttr(t *testing.T) {
 func TestIsValidWithInvalidAttrs(t *testing.T) {
 	examples := []SiteMeta{
 		{
-			Attrs: []MetaAttr{
-				{Name: "description", Content: "website description"},
+			Attrs: map[string]string{
+				"description": "website description",
 			},
 		},
 		{
-			Attrs: []MetaAttr{
-				{Name: "keywords", Content: "golang,meta"},
+			Attrs: map[string]string{
+				"keywords": "golang,meta",
 			},
 		},
 	}
@@ -45,8 +45,8 @@ func TestIsValidWithInvalidAttrs(t *testing.T) {
 func TestIsValidWithValidAttrs(t *testing.T) {
 	examples := []SiteMeta{
 		{
-			Attrs: []MetaAttr{
-				{Name: "twitter:card", Content: "summary"},
+			Attrs: map[string]string{
+				"twitter:card": "summary",
 			},
 		},
 	}
@@ -61,8 +61,8 @@ func TestIsValidWithValidAttrs(t *testing.T) {
 func TestStringWithValidAttr(t *testing.T) {
 	examples := []SiteMeta{
 		{
-			Attrs: []MetaAttr{
-				{Name: "twitter:card", Content: "summary"},
+			Attrs: map[string]string{
+				"twitter:card": "summary",
 			},
 		},
 	}
@@ -119,8 +119,8 @@ func TestParseWithValidContentUrl(t *testing.T) {
 		defer ts.Close()
 
 		result, err := Parse(ts.URL)
-		if err != nil {
-			t.Errorf("Error should not thrown. %v", err)
+		if err == nil {
+			t.Errorf("Error should be thrown. %v", err)
 		}
 		if result != nil {
 			t.Errorf("Result should be nil. %v", result)
@@ -141,8 +141,8 @@ func TestParseWithValidContentUrlWithSiteMetaTag(t *testing.T) {
 		defer ts.Close()
 
 		result, err := Parse(ts.URL)
-		if err != nil {
-			t.Errorf("Error should not thrown. %v", err)
+		if err == nil {
+			t.Errorf("Error should be thrown. %v", err)
 		}
 		if result != nil {
 			t.Errorf("SiteMeta should be nil. %v", result)
