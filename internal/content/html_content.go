@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/http/cookiejar"
 	"regexp"
 	"strings"
 
@@ -75,6 +76,21 @@ func attrsToMap(attrs []MetaAttr) map[string]string {
 	return result
 }
 
+func fetchContent(url string) (*http.Response, error) {
+	jar, err := cookiejar.New(nil)
+	if err != nil {
+		return nil, err
+	}
+
+	client := http.Client{Jar: jar}
+	res, err := client.Get(url)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
 //------
 
 // NewHTMLContent return a new HTMLContent instance.
@@ -98,7 +114,12 @@ func FetchHTMLContent(url string) (*HTMLContent, error) {
 		return nil, errors.New("Target Content seems like not html")
 	}
 
-	content.doc, err = goquery.NewDocument(url)
+	res, err := fetchContent(url)
+	if err != nil {
+		return nil, err
+	}
+
+	content.doc, err = goquery.NewDocumentFromResponse(res)
 	if err != nil {
 		return nil, err
 	}
