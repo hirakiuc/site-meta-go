@@ -13,7 +13,7 @@ import (
 
 const (
 	// DefaultEncoding describe a default encoding.
-	DefaultEncoding string = "utf-8"
+	DefaultEncoding string = "UTF-8"
 )
 
 // SiteMeta describe meta data of the website, like ogp, TwitterCard.
