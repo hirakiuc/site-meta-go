@@ -68,7 +68,9 @@ func parseMetaAttr(key string, s *goquery.Selection) *MetaAttr {
 func attrsToMap(attrs []MetaAttr) map[string]string {
 	result := map[string]string{}
 	for _, attr := range attrs {
-		result[attr.Name] = attr.Content
+		if attr.IsValid() {
+			result[attr.Name] = attr.Content
+		}
 	}
 	return result
 }
@@ -162,7 +164,7 @@ func (content *HTMLContent) MetaAttrs() map[string]string {
 			continue
 		}
 
-		attrs := []MetaAttr{}
+		attrs := make([]MetaAttr, selections.Length())
 		selections.Each(func(_ int, s *goquery.Selection) {
 			if attr := parseMetaAttr(key, s); attr != nil {
 				attrs = append(attrs, *attr)
