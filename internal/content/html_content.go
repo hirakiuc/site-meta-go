@@ -118,6 +118,7 @@ func FetchHTMLContent(url string) (*HTMLContent, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer res.Body.Close()
 
 	content.doc, err = goquery.NewDocumentFromResponse(res)
 	if err != nil {
@@ -132,6 +133,7 @@ func (content *HTMLContent) isValidContent() (bool, error) {
 	if err != nil {
 		return false, err
 	}
+	defer res.Body.Close()
 
 	contentType := strings.TrimSpace(res.Header["Content-Type"][0])
 	logger.Printf("contentType:%s", contentType)
