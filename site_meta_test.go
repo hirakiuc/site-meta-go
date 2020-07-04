@@ -77,6 +77,7 @@ func TestStringWithValidAttr(t *testing.T) {
 
 func TestParseWithInvalidUrl(t *testing.T) {
 	url := "invalid url"
+
 	_, err := Parse(url)
 	if err == nil {
 		t.Errorf("Invalid error should return error")
@@ -122,6 +123,7 @@ func TestParseWithValidContentUrl(t *testing.T) {
 		if err == nil {
 			t.Errorf("Error should be thrown. %v", err)
 		}
+
 		if result != nil {
 			t.Errorf("Result should be nil. %v", result)
 		}
@@ -144,6 +146,7 @@ func TestParseWithValidContentUrlWithSiteMetaTag(t *testing.T) {
 		if err == nil {
 			t.Errorf("Error should be thrown. %v", err)
 		}
+
 		if result != nil {
 			t.Errorf("SiteMeta should be nil. %v", result)
 		}
@@ -166,6 +169,7 @@ func TestParseWithValidContentUrlWithTwitterCard(t *testing.T) {
 		if err != nil {
 			t.Errorf("Error should not thrown. %v", err)
 		}
+
 		if result == nil {
 			t.Errorf("SiteMeta should not be nil. %v", err)
 		}
@@ -188,6 +192,7 @@ func TestParseWithValidContentUrlWithOgp(t *testing.T) {
 		if err != nil {
 			t.Errorf("Error should not thrown. %v", err)
 		}
+
 		if result == nil {
 			t.Errorf("SiteMeta should not be nil.")
 		}
@@ -205,31 +210,41 @@ func makeExampleHandler(example FileExample) http.HandlerFunc {
 		w.Header().Set("Content-Type", contentTypeValue)
 
 		fpath := fmt.Sprintf("./test/files/%s", example.FileName)
+
 		file, err := os.Open(fpath)
 		if err != nil {
 			w.WriteHeader(500)
 			return
 		}
+
 		body, err := ioutil.ReadAll(file)
 		if err != nil {
 			w.WriteHeader(500)
 			return
 		}
 
-		w.Write(body)
+		_, err = w.Write(body)
+		if err != nil {
+			w.WriteHeader(500)
+			return
+		}
 	})
 }
 
 func TestParseWithNonUTF8ContentUrl(t *testing.T) {
-	examples := []FileExample{
-		FileExample{FileName: "utf8.html", Encoding: "utf-8"},
-		FileExample{FileName: "eucjp.html", Encoding: "euc-jp"},
-		FileExample{FileName: "sjis.html", Encoding: "SHIFT_JIS"},
-		FileExample{FileName: "iso2022jp.html", Encoding: "ISO-2022-JP"},
+	examples := []struct {
+		FileName string
+		Encoding string
+	}{
+		{FileName: "utf8.html", Encoding: "utf-8"},
+		{FileName: "eucjp.html", Encoding: "euc-jp"},
+		{FileName: "sjis.html", Encoding: "SHIFT_JIS"},
+		{FileName: "iso2022jp.html", Encoding: "ISO-2022-JP"},
 	}
 
 	for _, example := range examples {
 		handler := makeExampleHandler(example)
+
 		ts := httptest.NewServer(handler)
 		defer ts.Close()
 
@@ -237,6 +252,7 @@ func TestParseWithNonUTF8ContentUrl(t *testing.T) {
 		if err != nil {
 			t.Errorf("Error should not thrown. %v", err)
 		}
+
 		if result == nil {
 			t.Errorf("SiteMeta should not be nil.")
 		}
@@ -244,12 +260,16 @@ func TestParseWithNonUTF8ContentUrl(t *testing.T) {
 }
 
 func TestParseWithInvalidEncodingUrl(t *testing.T) {
-	examples := []FileExample{
-		FileExample{FileName: "utf8.html", Encoding: "InvalidEncoding"},
+	examples := []struct {
+		FileName string
+		Encoding string
+	}{
+		{FileName: "utf8.html", Encoding: "InvalidEncoding"},
 	}
 
 	for _, example := range examples {
 		handler := makeExampleHandler(example)
+
 		ts := httptest.NewServer(handler)
 		defer ts.Close()
 
@@ -257,6 +277,7 @@ func TestParseWithInvalidEncodingUrl(t *testing.T) {
 		if err == nil {
 			t.Errorf("Error should be thrown.")
 		}
+
 		if result != nil {
 			t.Errorf("SiteMeta should be nil.")
 		}

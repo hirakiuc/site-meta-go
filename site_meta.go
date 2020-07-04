@@ -8,7 +8,6 @@ import (
 	iconv "github.com/djimenez/iconv-go"
 
 	content "github.com/hirakiuc/site-meta-go/internal/content"
-	logging "github.com/hirakiuc/site-meta-go/internal/logger"
 )
 
 const (
@@ -16,12 +15,13 @@ const (
 	DefaultEncoding string = "UTF-8"
 )
 
+//nolint
+var CantParseErr error = errors.New("this site can't parse SiteMeta")
+
 // SiteMeta describe meta data of the website, like ogp, TwitterCard.
 type SiteMeta struct {
 	Attrs map[string]string
 }
-
-var logger = logging.GetLogger()
 
 func newSiteMeta() SiteMeta {
 	return SiteMeta{Attrs: map[string]string{}}
@@ -30,10 +30,12 @@ func newSiteMeta() SiteMeta {
 // String return a description about this instance.
 func (meta *SiteMeta) String() string {
 	attrs := []string{}
+
 	for key, value := range meta.Attrs {
 		str := fmt.Sprintf("%s - %s", key, value)
 		attrs = append(attrs, str)
 	}
+
 	return strings.Join(attrs, "\n")
 }
 
@@ -44,7 +46,6 @@ func (meta *SiteMeta) IsValid() bool {
 	}
 
 	for key := range meta.Attrs {
-		logger.Printf("IsValid: key:%s", key)
 		if strings.HasPrefix(key, "twitter:") || strings.HasPrefix(key, "og:") {
 			continue
 		}
@@ -56,9 +57,7 @@ func (meta *SiteMeta) IsValid() bool {
 }
 
 func (meta *SiteMeta) convertEncoding(toEncoding string) error {
-	logger.Printf("Convert encoding: from:%s to:%s", toEncoding, DefaultEncoding)
 	if toEncoding == DefaultEncoding {
-		logger.Printf("  Skipped.")
 		return nil
 	}
 
@@ -69,20 +68,21 @@ func (meta *SiteMeta) convertEncoding(toEncoding string) error {
 	defer converter.Close()
 
 	result := map[string]string{}
+
 	for key, value := range meta.Attrs {
 		newKey, err := converter.ConvertString(key)
 		if err != nil {
-			logger.Printf("Failed to convert encoding: %s %v\n", key, err)
 			return err
 		}
 
 		newValue, err := converter.ConvertString(value)
 		if err != nil {
-			logger.Printf("Failed to convert encoding: %s %v\n", value, err)
 			return err
 		}
+
 		result[newKey] = newValue
 	}
+
 	meta.Attrs = result
 
 	return nil
@@ -96,6 +96,7 @@ func Parse(url string) (*SiteMeta, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	data.Attrs = html.MetaAttrs()
 
 	err = data.convertEncoding(html.ContentEncoding)
@@ -103,8 +104,8 @@ func Parse(url string) (*SiteMeta, error) {
 		return nil, err
 	}
 
-	if data.IsValid() == false {
-		return nil, errors.New("This site can't parse SiteMeta")
+	if !data.IsValid() {
+		return nil, fmt.Errorf("%w", CantParseErr)
 	}
 
 	return &data, nil
