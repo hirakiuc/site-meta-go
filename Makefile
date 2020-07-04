@@ -11,9 +11,7 @@ clean:
 
 .PHONY: check
 check:
-	go vet . ./internal/...
-	golint ./internal/...
-	golint .
+	golangci-lint run --enable-all ./...
 
 .PHONY: test
 test:
