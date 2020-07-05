@@ -1,7 +1,7 @@
 .DEFAULT_GOAL := default
 
 build:
-	go build
+	go build ./...
 
 install:
 	go install
@@ -15,10 +15,10 @@ check:
 
 .PHONY: test
 test:
-	go test -cover
+	go test -cover ./...
 
 testbuild:
-	go test -c -args -w -gcflags "-N -l"
+	go test -c -args -w -gcflags "-N -l" ./...
 
 .PHONY: default
 default:
