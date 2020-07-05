@@ -209,7 +209,7 @@ func makeExampleHandler(example FileExample) http.HandlerFunc {
 		contentTypeValue := fmt.Sprintf("text/html; charset=%s", example.Encoding)
 		w.Header().Set("Content-Type", contentTypeValue)
 
-		fpath := fmt.Sprintf("./test/files/%s", example.FileName)
+		fpath := fmt.Sprintf("../test/files/%s", example.FileName)
 
 		file, err := os.Open(fpath)
 		if err != nil {

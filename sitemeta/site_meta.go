@@ -7,7 +7,7 @@ import (
 
 	iconv "github.com/djimenez/iconv-go"
 
-	content "github.com/hirakiuc/site-meta-go/internal/content"
+	content "github.com/hirakiuc/site-meta-go/sitemeta/content"
 )
 
 const (
