@@ -1,6 +1,7 @@
 package content
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -42,7 +43,7 @@ func extractCharset(contentType string) string {
 	return strings.ToUpper(group[1])
 }
 
-func fetchContent(url string) (*http.Response, error) {
+func fetchContent(c context.Context, url string) (*http.Response, error) {
 	jar, err := cookiejar.New(nil)
 	if err != nil {
 		return nil, err
@@ -50,12 +51,37 @@ func fetchContent(url string) (*http.Response, error) {
 
 	client := http.Client{Jar: jar}
 
-	res, err := client.Get(url)
+	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	return res, nil
+	req = req.WithContext(c)
+
+	ch := make(chan error)
+	defer close(ch)
+
+	var resp *http.Response
+
+	go func(r **http.Response) {
+		//nolint
+		// NOTE: this response will be closed at caller code.
+		*r, err = client.Do(req)
+		if err != nil {
+			ch <- err
+			return
+		}
+
+		ch <- nil
+	}(&resp)
+
+	// Wait for the content
+	err = <-ch
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
 }
 
 //------
@@ -70,7 +96,7 @@ func NewHTMLContent(url string) HTMLContent {
 }
 
 // FetchHTMLContent fetch the url content, check and return HTMLContent instance.
-func FetchHTMLContent(url string) (*HTMLContent, error) {
+func FetchHTMLContent(c context.Context, url string) (*HTMLContent, error) {
 	content := NewHTMLContent(url)
 
 	isValid, err := content.isValidContent()
@@ -80,7 +106,7 @@ func FetchHTMLContent(url string) (*HTMLContent, error) {
 		return nil, fmt.Errorf("%w", notHTMLContentErr)
 	}
 
-	res, err := fetchContent(url)
+	res, err := fetchContent(c, url)
 	if err != nil {
 		return nil, err
 	}

@@ -1,6 +1,7 @@
 package sitemeta
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
@@ -89,10 +90,10 @@ func (meta *SiteMeta) convertEncoding(toEncoding string) error {
 }
 
 // Parse return SiteMeta instance if the url content has meta tags about twitter card or ogp.
-func Parse(url string) (*SiteMeta, error) {
+func Parse(c context.Context, url string) (*SiteMeta, error) {
 	data := newSiteMeta()
 
-	html, err := content.FetchHTMLContent(url)
+	html, err := content.FetchHTMLContent(c, url)
 	if err != nil {
 		return nil, err
 	}

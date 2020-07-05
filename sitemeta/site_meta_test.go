@@ -1,6 +1,7 @@
 package sitemeta
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -78,7 +79,9 @@ func TestStringWithValidAttr(t *testing.T) {
 func TestParseWithInvalidUrl(t *testing.T) {
 	url := "invalid url"
 
-	_, err := Parse(url)
+	ctx := context.Background()
+
+	_, err := Parse(ctx, url)
 	if err == nil {
 		t.Errorf("Invalid error should return error")
 	}
@@ -93,7 +96,9 @@ func TestParseWithInvalidContentUrl(t *testing.T) {
 	ts := httptest.NewServer(handler)
 	defer ts.Close()
 
-	result, err := Parse(ts.URL)
+	ctx := context.Background()
+
+	result, err := Parse(ctx, ts.URL)
 	if err == nil {
 		t.Errorf("Error should throw.")
 	}
@@ -119,7 +124,9 @@ func TestParseWithValidContentUrl(t *testing.T) {
 		ts := httptest.NewServer(handler)
 		defer ts.Close()
 
-		result, err := Parse(ts.URL)
+		ctx := context.Background()
+
+		result, err := Parse(ctx, ts.URL)
 		if err == nil {
 			t.Errorf("Error should be thrown. %v", err)
 		}
@@ -142,7 +149,9 @@ func TestParseWithValidContentUrlWithSiteMetaTag(t *testing.T) {
 		ts := httptest.NewServer(handler)
 		defer ts.Close()
 
-		result, err := Parse(ts.URL)
+		ctx := context.Background()
+
+		result, err := Parse(ctx, ts.URL)
 		if err == nil {
 			t.Errorf("Error should be thrown. %v", err)
 		}
@@ -165,7 +174,9 @@ func TestParseWithValidContentUrlWithTwitterCard(t *testing.T) {
 		ts := httptest.NewServer(handler)
 		defer ts.Close()
 
-		result, err := Parse(ts.URL)
+		ctx := context.Background()
+
+		result, err := Parse(ctx, ts.URL)
 		if err != nil {
 			t.Errorf("Error should not thrown. %v", err)
 		}
@@ -188,7 +199,9 @@ func TestParseWithValidContentUrlWithOgp(t *testing.T) {
 		ts := httptest.NewServer(handler)
 		defer ts.Close()
 
-		result, err := Parse(ts.URL)
+		ctx := context.Background()
+
+		result, err := Parse(ctx, ts.URL)
 		if err != nil {
 			t.Errorf("Error should not thrown. %v", err)
 		}
@@ -248,7 +261,9 @@ func TestParseWithNonUTF8ContentUrl(t *testing.T) {
 		ts := httptest.NewServer(handler)
 		defer ts.Close()
 
-		result, err := Parse(ts.URL)
+		ctx := context.Background()
+
+		result, err := Parse(ctx, ts.URL)
 		if err != nil {
 			t.Errorf("Error should not thrown. %v", err)
 		}
@@ -273,7 +288,9 @@ func TestParseWithInvalidEncodingUrl(t *testing.T) {
 		ts := httptest.NewServer(handler)
 		defer ts.Close()
 
-		result, err := Parse(ts.URL)
+		ctx := context.Background()
+
+		result, err := Parse(ctx, ts.URL)
 		if err == nil {
 			t.Errorf("Error should be thrown.")
 		}
