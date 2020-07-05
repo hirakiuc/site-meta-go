@@ -1,13 +1,22 @@
 .DEFAULT_GOAL := default
 
-build:
-	go build ./...
+SERVER=server
 
-install:
-	go install
+.PHONY: build
+build: build-server
 
+.PHONY:build-server
+build-server:
+	go build -o ${SERVER} ./cmd/server/main.go
+
+.PHONY: run-server
+run-server:
+	go run ./cmd/server/main.go
+
+.PHONY: clean
 clean:
 	go clean
+	rm -f ${SERVER}
 
 .PHONY: check
 check:
@@ -17,6 +26,7 @@ check:
 test:
 	go test -cover ./...
 
+.PHONY: testbuild
 testbuild:
 	go test -c -args -w -gcflags "-N -l" ./...
 

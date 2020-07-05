@@ -2,6 +2,7 @@ package sitemeta
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -38,6 +39,15 @@ func (meta *SiteMeta) String() string {
 	}
 
 	return strings.Join(attrs, "\n")
+}
+
+func (meta *SiteMeta) ToJSON() (string, error) {
+	bytes, err := json.Marshal(meta.Attrs)
+	if err != nil {
+		return "", err
+	}
+
+	return string(bytes), nil
 }
 
 // IsValid validate that this instance keeps valid value, or not.
