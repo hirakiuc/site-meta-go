@@ -1,7 +1,6 @@
 package sitemeta
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -26,6 +25,7 @@ func (meta *SiteMeta) String() string {
 		str := fmt.Sprintf("%s - %s", key, value)
 		attrs = append(attrs, str)
 	}
+
 	return strings.Join(attrs, "\n")
 }
 
@@ -37,15 +37,6 @@ func (meta *SiteMeta) AddMeta(key string, val string) bool {
 	meta.Attrs[key] = val
 
 	return true
-}
-
-func (meta *SiteMeta) ToJSON() (string, error) {
-	bytes, err := json.Marshal(meta.Attrs)
-	if err != nil {
-		return "", err
-	}
-
-	return string(bytes), nil
 }
 
 func (meta *SiteMeta) IsEmpty() bool {
