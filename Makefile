@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := default
 
-SERVER=server
+SERVER=api-server
 
 .PHONY: build
 build: build-server
