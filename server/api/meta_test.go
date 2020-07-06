@@ -6,9 +6,12 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGetMetaWithoutQueryParameters(t *testing.T) {
+	assert := assert.New(t)
+
 	gin.SetMode(gin.TestMode)
 
 	w := httptest.NewRecorder()
@@ -19,7 +22,9 @@ func TestGetMetaWithoutQueryParameters(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/", nil)
 	r.ServeHTTP(w, req)
 
-	if w.Code != http.StatusBadRequest {
-		t.Errorf("request without any query params should receive BadRequest")
-	}
+	assert.Equal(
+		http.StatusBadRequest,
+		w.Code,
+		"request without any query params should receive BadRequest",
+	)
 }

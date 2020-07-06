@@ -8,20 +8,24 @@ import (
 	"net/http/httptest"
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestParseWithInvalidUrl(t *testing.T) {
+	assert := assert.New(t)
+
 	url := "invalid url"
 
 	ctx := context.Background()
 
 	_, err := Parse(ctx, url)
-	if err == nil {
-		t.Errorf("Invalid error should return error")
-	}
+	assert.NotNil(err, "Invalid error should return error")
 }
 
 func TestParseWithInvalidContentUrl(t *testing.T) {
+	assert := assert.New(t)
+
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/pdf")
 		fmt.Fprintf(w, "Sample Response")
@@ -33,16 +37,14 @@ func TestParseWithInvalidContentUrl(t *testing.T) {
 	ctx := context.Background()
 
 	result, err := Parse(ctx, ts.URL)
-	if err == nil {
-		t.Errorf("Error should throw.")
-	}
 
-	if result != nil {
-		t.Errorf("Result should be nil. %v", result)
-	}
+	assert.NotNil(err, "Error should throw")
+	assert.Nil(result, "Result should be nil")
 }
 
 func TestParseWithValidContentUrl(t *testing.T) {
+	assert := assert.New(t)
+
 	handlers := []http.Handler{
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "text/html")
@@ -61,21 +63,16 @@ func TestParseWithValidContentUrl(t *testing.T) {
 		ctx := context.Background()
 
 		result, err := Parse(ctx, ts.URL)
-		if err != nil {
-			t.Errorf("Error should not be thrown. %v", err)
-		}
 
-		if result == nil {
-			t.Errorf("Result should not be nil.")
-		}
-
-		if !result.IsEmpty() {
-			t.Errorf("Result should be empty.")
-		}
+		assert.Nil(err, "Error should not be thrown")
+		assert.NotNil(result, "result should not be nil.")
+		assert.True(result.IsEmpty(), "result should be empty")
 	}
 }
 
 func TestParseWithValidContentUrlWithSiteMetaTag(t *testing.T) {
+	assert := assert.New(t)
+
 	handlers := []http.Handler{
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "text/html")
@@ -90,21 +87,16 @@ func TestParseWithValidContentUrlWithSiteMetaTag(t *testing.T) {
 		ctx := context.Background()
 
 		result, err := Parse(ctx, ts.URL)
-		if err != nil {
-			t.Errorf("Error should not be thrown. %v", err)
-		}
 
-		if result == nil {
-			t.Errorf("SiteMeta should not be nil. %v", result)
-		}
-
-		if !result.IsEmpty() {
-			t.Errorf("result should be empty.")
-		}
+		assert.Nil(err, "Error should not be thrown")
+		assert.NotNil(result, "SiteMeta should not be nil")
+		assert.True(result.IsEmpty(), "result should be empty")
 	}
 }
 
 func TestParseWithValidContentUrlWithTwitterCard(t *testing.T) {
+	assert := assert.New(t)
+
 	handlers := []http.Handler{
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "text/html")
@@ -119,17 +111,15 @@ func TestParseWithValidContentUrlWithTwitterCard(t *testing.T) {
 		ctx := context.Background()
 
 		result, err := Parse(ctx, ts.URL)
-		if err != nil {
-			t.Errorf("Error should not thrown. %v", err)
-		}
 
-		if result == nil {
-			t.Errorf("SiteMeta should not be nil. %v", err)
-		}
+		assert.Nil(err, "error should not be thrown")
+		assert.NotNil(result, "SIteMeta should not be nil")
 	}
 }
 
 func TestParseWithValidContentUrlWithOgp(t *testing.T) {
+	assert := assert.New(t)
+
 	handlers := []http.Handler{
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "text/html")
@@ -144,13 +134,9 @@ func TestParseWithValidContentUrlWithOgp(t *testing.T) {
 		ctx := context.Background()
 
 		result, err := Parse(ctx, ts.URL)
-		if err != nil {
-			t.Errorf("Error should not thrown. %v", err)
-		}
 
-		if result == nil {
-			t.Errorf("SiteMeta should not be nil.")
-		}
+		assert.Nil(err, "error should not be thrown")
+		assert.NotNil(result, "SiteMeta should not be nil.")
 	}
 }
 
@@ -187,6 +173,8 @@ func makeExampleHandler(example FileExample) http.HandlerFunc {
 }
 
 func TestParseWithNonUTF8ContentUrl(t *testing.T) {
+	assert := assert.New(t)
+
 	examples := []struct {
 		FileName string
 		Encoding string
@@ -206,17 +194,15 @@ func TestParseWithNonUTF8ContentUrl(t *testing.T) {
 		ctx := context.Background()
 
 		result, err := Parse(ctx, ts.URL)
-		if err != nil {
-			t.Errorf("Error should not thrown. %v", err)
-		}
 
-		if result == nil {
-			t.Errorf("SiteMeta should not be nil.")
-		}
+		assert.Nil(err, "error should not be thrown")
+		assert.NotNil(result, "SiteMeta should not be nil.")
 	}
 }
 
 func TestParseWithInvalidEncodingUrl(t *testing.T) {
+	assert := assert.New(t)
+
 	examples := []struct {
 		FileName string
 		Encoding string
@@ -233,12 +219,8 @@ func TestParseWithInvalidEncodingUrl(t *testing.T) {
 		ctx := context.Background()
 
 		result, err := Parse(ctx, ts.URL)
-		if err == nil {
-			t.Errorf("Error should be thrown.")
-		}
 
-		if result != nil {
-			t.Errorf("SiteMeta should be nil.")
-		}
+		assert.NotNil(err, "error should not be thrown")
+		assert.Nil(result, "SiteMeta should be nil")
 	}
 }
