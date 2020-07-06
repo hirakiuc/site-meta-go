@@ -1,22 +1,27 @@
 package sitemeta
 
 import (
+	"fmt"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestIsValidWithEmptyAttr(t *testing.T) {
+	assert := assert.New(t)
+
 	examples := []SiteMeta{
 		{Attrs: map[string]string{}},
 	}
 
 	for _, ex := range examples {
-		if !ex.IsValid() {
-			t.Errorf("[Example %s] should be invalid", ex.String())
-		}
+		assert.True(ex.IsValid(), "Empty meta should be valid")
 	}
 }
 
 func TestIsValidWithInvalidAttrs(t *testing.T) {
+	assert := assert.New(t)
+
 	examples := []SiteMeta{
 		{
 			Attrs: map[string]string{
@@ -31,13 +36,14 @@ func TestIsValidWithInvalidAttrs(t *testing.T) {
 	}
 
 	for _, ex := range examples {
-		if ex.IsValid() != false {
-			t.Errorf("[Example %s] should be invalid", ex.String())
-		}
+		msg := fmt.Sprintf("[Example %s] should be invalid", ex.String())
+		assert.False(ex.IsValid(), msg)
 	}
 }
 
 func TestIsValidWithValidAttrs(t *testing.T) {
+	assert := assert.New(t)
+
 	examples := []SiteMeta{
 		{
 			Attrs: map[string]string{
@@ -47,13 +53,14 @@ func TestIsValidWithValidAttrs(t *testing.T) {
 	}
 
 	for _, ex := range examples {
-		if ex.IsValid() != true {
-			t.Errorf("[Example %s] should be valid", ex.String())
-		}
+		msg := fmt.Sprintf("[Example %s] should be valid", ex.String())
+		assert.True(ex.IsValid(), msg)
 	}
 }
 
 func TestStringWithValidAttr(t *testing.T) {
+	assert := assert.New(t)
+
 	examples := []SiteMeta{
 		{
 			Attrs: map[string]string{
@@ -63,9 +70,6 @@ func TestStringWithValidAttr(t *testing.T) {
 	}
 
 	for _, ex := range examples {
-		str := ex.String()
-		if str != "twitter:card - summary" {
-			t.Errorf("[Example %s] should be stringify", str)
-		}
+		assert.Equal("twitter:card - summary", ex.String(), "SiteMeta should be stringify")
 	}
 }
