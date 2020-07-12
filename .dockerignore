@@ -1,0 +1,5 @@
+.codeclimate.yml
+.github
+.golangci.yml
+/vendor
+/test
